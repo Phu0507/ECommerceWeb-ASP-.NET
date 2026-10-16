@@ -1,0 +1,295 @@
+﻿@{
+    ViewData["Title"] = "Thống kê hệ thống";
+}
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
+<style>
+    body {
+        background: #f5f6fa;
+        color: #333;
+    }
+
+    .dashboard-container {
+        max-width: 1400px;
+        margin: 30px auto;
+        padding: 0 20px;
+    }
+
+    .dashboard-title {
+        font-size: 26px;
+        font-weight: 600;
+        margin-bottom: 30px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    /* GRID CHÍNH */
+    .dashboard-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 26px;
+    }
+
+    /* CARD */
+    .stat-card {
+        height: 140px;
+        border-radius: 18px;
+        padding: 22px;
+        color: #fff;
+        box-shadow: 0 10px 25px rgba(0,0,0,.18);
+        transition: all .25s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+        .stat-card:hover {
+            transform: translateY(-6px);
+        }
+
+    .stat-number {
+        font-size: 34px;
+        font-weight: 700;
+    }
+
+    .stat-title {
+        font-size: 16px;
+        opacity: .95;
+        margin-top: 4px;
+    }
+
+    .stat-icon {
+        position: absolute;
+        right: 20px;
+        bottom: 16px;
+        font-size: 46px;
+        opacity: .85;
+    }
+
+    /* MÀU */
+    .bg-product {
+        background: linear-gradient(135deg, #4e73df, #224abe);
+    }
+
+    .bg-category {
+        background: linear-gradient(135deg, #1cc88a, #13855c);
+    }
+
+    .bg-brand {
+        background: linear-gradient(135deg, #f6c23e, #dda20a);
+        color: #000;
+    }
+
+    .bg-order {
+        background: linear-gradient(135deg, #e74a3b, #be2617);
+    }
+
+    .bg-user {
+        background: linear-gradient(135deg, #343a40, #000);
+    }
+</style>
+
+<div class="dashboard-container">
+    <div class="dashboard-title">
+        <i class="fa-solid fa-chart-line"></i>
+        Thống kê hệ thống
+    </div>
+
+    <div class="dashboard-grid">
+        <!-- SẢN PHẨM -->
+        <div class="stat-card bg-product">
+            <div class="stat-number">@ViewBag.count_Product</div>
+            <div class="stat-title">Sản phẩm</div>
+            <i class="fa-solid fa-box stat-icon"></i>
+        </div>
+
+        <!-- DANH MỤC -->
+        <div class="stat-card bg-category">
+            <div class="stat-number">@ViewBag.count_Category</div>
+            <div class="stat-title">Danh mục</div>
+            <i class="fa-solid fa-list stat-icon"></i>
+        </div>
+
+        <!-- THƯƠNG HIỆU -->
+        <div class="stat-card bg-brand">
+            <div class="stat-number">@ViewBag.count_Brand</div>
+            <div class="stat-title">Thương hiệu</div>
+            <i class="fa-solid fa-tags stat-icon"></i>
+        </div>
+
+        <!-- ĐƠN HÀNG -->
+        <div class="stat-card bg-order">
+            <div class="stat-number">@ViewBag.count_Order</div>
+            <div class="stat-title">Đơn hàng</div>
+            <i class="fa-solid fa-cart-shopping stat-icon"></i>
+        </div>
+
+        <!-- NGƯỜI DÙNG -->
+        <div class="stat-card bg-user">
+            <div class="stat-number">@ViewBag.count_User</div>
+            <div class="stat-title">Người dùng</div>
+            <i class="fa-solid fa-users stat-icon"></i>
+        </div>
+    </div>
+
+    <!-- FILTER -->
+    <div style="display:flex;gap:15px;align-items:end;margin-top:50px;">
+        <div>
+            <label>Từ ngày</label>
+            <input type="date" id="fromDate" class="form-control" />
+        </div>
+
+        <div>
+            <label>Đến ngày</label>
+            <input type="date" id="toDate" class="form-control" />
+        </div>
+
+        <button id="btnFilter" class="btn btn-primary" style="height:38px;">
+            Lọc
+        </button>
+    </div>
+
+    <!-- CHART -->
+    <div style="margin-top:50px;">
+        <div style="background:#fff;border-radius:18px;padding:25px;box-shadow:0 10px 25px rgba(0,0,0,.12);">
+            <h4 style="margin-bottom:20px;font-weight:600;">
+                📊 Biểu đồ thống kê
+            </h4>
+            <canvas id="dashboardChart" height="110"></canvas>
+        </div>
+    </div>
+
+
+</div>
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        let dashboardChart = null;
+
+        document.addEventListener("DOMContentLoaded", function () {
+
+            loadChart(); // load lần đầu
+
+            document.getElementById("btnFilter").addEventListener("click", function () {
+                loadChart();
+            });
+        });
+
+        function loadChart() {
+            const fromDateRaw = document.getElementById("fromDate").value;
+            const toDateRaw = document.getElementById("toDate").value;
+
+            const payload = {
+                fromDate: fromDateRaw ? new Date(fromDateRaw).toISOString() : null,
+                toDate: toDateRaw ? new Date(toDateRaw).toISOString() : null
+            };
+
+            console.log("SEND:", payload);
+
+            fetch('@Url.Action("GetChartData", "Dashboard", new { area = "Admin" })', {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
+            })
+                .then(res => res.json())
+                .then(data => {
+
+                    const labels = data.map(x =>
+                        new Date(x.dateCreated).toLocaleDateString('vi-VN')
+                    );
+
+                    const quantity = data.map(x => x.quantity);
+                    const sold = data.map(x => x.sold);
+                    const revenue = data.map(x => x.revenue);
+                    const profit = data.map(x => x.profit);
+
+                    // 🔥 Nếu chart đã tồn tại → destroy
+                    if (dashboardChart) {
+                        dashboardChart.destroy();
+                    }
+
+                    dashboardChart = new Chart(
+                        document.getElementById('dashboardChart'),
+                        {
+                            type: 'line',
+                            data: {
+                                labels,
+                                datasets: [
+                                    {
+                                        label: 'Đơn hàng',
+                                        data: quantity,
+                                        yAxisID: 'y',
+                                        tension: 0.35
+                                    },
+                                    {
+                                        label: 'Số lượng bán ra',
+                                        data: sold,
+                                        yAxisID: 'y',
+                                        tension: 0.35
+                                    },
+                                    {
+                                        label: 'Doanh thu',
+                                        data: revenue,
+                                        yAxisID: 'y1',
+                                        tension: 0.35
+                                    },
+                                    {
+                                        label: 'Lợi nhuận',
+                                        data: profit,
+                                        yAxisID: 'y1',
+                                        tension: 0.35
+                                    }
+                                ]
+                            },
+                            options: {
+                                responsive: true,
+                                interaction: {
+                                    mode: 'index',
+                                    intersect: false
+                                },
+                                plugins: {
+                                    tooltip: {
+                                        callbacks: {
+                                            label: function (ctx) {
+                                                let v = ctx.raw;
+                                                if (ctx.dataset.yAxisID === 'y1') {
+                                                    return ctx.dataset.label + ': ' +
+                                                        v.toLocaleString('vi-VN') + ' ₫';
+                                                }
+                                                return ctx.dataset.label + ': ' + v;
+                                            }
+                                        }
+                                    }
+                                },
+                                scales: {
+                                    y: {
+                                        type: 'linear',
+                                        position: 'left',
+                                        title: {
+                                            display: true,
+                                            text: 'Số lượng'
+                                        }
+                                    },
+                                    y1: {
+                                        type: 'linear',
+                                        position: 'right',
+                                        grid: {
+                                            drawOnChartArea: false
+                                        },
+                                        title: {
+                                            display: true,
+                                            text: 'Doanh thu / Lợi nhuận'
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    );
+                });
+        }
+    </script>
+
+
+}

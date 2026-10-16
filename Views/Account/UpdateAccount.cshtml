@@ -1,0 +1,28 @@
+﻿@model AppUserModel
+@{
+	ViewData["Title"] = "Update Information";
+}
+<section id="">
+	<!--form-->
+	<div class="container">
+		<div class="row">
+			<div class="col-sm-8 col-sm-offset-1">
+				<div class="signup-form">
+					<!--sign up form-->
+					<h2>Update Information!</h2>
+					<div asp-validation-summary="ModelOnly" class="text-danger"></div>
+					<form asp-action="UpdateInfoAccount" asp-controller="Account">
+						<input type="hidden" asp-for="Id" />
+						<input readonly asp-for="UserName" type="text" placeholder="Name" />
+						<span asp-validation-for="UserName" class="text-danger"></span>
+						<input readonly asp-for="Email" type="email" placeholder="Email" />
+						<span asp-validation-for="Email" class="text-danger"></span>
+						<input asp-for="PhoneNumber" placeholder="Phone" />
+						<span asp-validation-for="PhoneNumber" class="text-danger"></span>
+						<button type="submit" class="btn btn-default">Update</button>
+					</form>
+				</div><!--/sign up form-->
+			</div>
+		</div>
+	</div>
+</section><!--/form-->

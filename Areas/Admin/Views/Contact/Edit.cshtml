@@ -1,0 +1,60 @@
+﻿@model ContactModel
+@{
+    ViewData["Title"] = "Edit Contact";
+}
+<h4>Edit Contact</h4>
+<div class="col-md-9">
+    <form asp-action="Edit" enctype="multipart/form-data">
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <div class="form-group">
+            <label>Name</label>
+            <input asp-for="Name" class="form-control" readonly />
+            <span asp-validation-for="Name" class="text-danger"></span>
+        </div>
+        <div class="form-group">
+            <label>Description</label>
+            <textarea asp-for="Description" id="Description" class="form-control"></textarea>
+            <span asp-validation-for="Description" class="text-danger"></span>
+        </div>
+        <div class="form-group">
+            <label>Map</label>
+            <textarea asp-for="Map" id="Map" class="form-control"></textarea>
+            <span asp-validation-for="Map" class="text-danger"></span>
+        </div>
+        <div class="form-group">
+            <label>Email</label>
+            <textarea asp-for="Email" id="Description" class="form-control"></textarea>
+            <span asp-validation-for="Email" class="text-danger"></span>
+        </div>
+        <div class="form-group">
+            <label>Phone</label>
+            <textarea asp-for="Phone" id="Description" class="form-control"></textarea>
+            <span asp-validation-for="Phone" class="text-danger"></span>
+        </div>
+        <div class="form-group">
+            <label>Image</label>
+            <input asp-for="ImageUpload" class="form-control" />
+            <span asp-validation-for="ImageUpload" class="text-danger"></span>
+            <img width="120" src="~/media/products/@Model.LogoImg" alt="@Model.Name" />
+        </div>
+        <button type="submit" class="btn btn-success">Update</button>
+    </form>
+    <a asp-action="Index" asp-controller="Contact" class="btn btn-secondary mt-2">Back to List</a>
+</div>
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script src="//cdn.ckeditor.com/4.22.1/standard/ckeditor.js"></script>
+    <script>
+        CKEDITOR.replace('Description', {
+            allowedContent: true
+        });
+
+        CKEDITOR.replace('Map', {
+            allowedContent: true
+        });
+    </script>
+
+}
+

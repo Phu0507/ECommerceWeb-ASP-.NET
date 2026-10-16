@@ -1,0 +1,193 @@
+﻿@model CouponModel
+@{
+    ViewData["Title"] = "Coupon";
+}
+<h4>Coupon Manager</h4>
+<div class="col-md-9">
+    <form autocomplete="off" asp-action="Create" asp-controller="Coupon" enctype="multipart/form-data">
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <div class="form-group">
+            <label>Name</label>
+            <input asp-for="Name" class="form-control" />
+            <span asp-validation-for="Name" class="text-danger"></span>
+        </div>
+        <div class="form-group">
+            <label>Description</label>
+            <textarea asp-for="Description" id="Description" class="form-control"></textarea>
+            <span asp-validation-for="Description" class="text-danger"></span>
+        </div>
+        <div class="form-group">
+            <label>Loại giảm giá</label><br />
+
+            <label>
+                <input type="radio" asp-for="DiscountType" value="1" checked />
+                Giảm theo %
+            </label>
+
+            <label style="margin-left:20px">
+                <input type="radio" asp-for="DiscountType" value="2" />
+                Giảm theo tiền
+            </label>
+
+            <span asp-validation-for="DiscountType" class="text-danger"></span>
+        </div>
+        <div class="form-group" id="percentBox">
+            <label>Giảm (%)</label>
+            <input asp-for="DiscountPercent" class="form-control" />
+            <span asp-validation-for="DiscountPercent" class="text-danger"></span>
+        </div>
+
+        <div class="form-group d-none" id="amountBox">
+            <label>Giảm tiền (VND)</label>
+            <input asp-for="DiscountAmount" class="form-control" />
+            <span asp-validation-for="DiscountAmount" class="text-danger"></span>
+        </div>
+
+        <div class="form-group">
+            <label>Quantity</label>
+            <input asp-for="Quantity" class="form-control" />
+            <span asp-validation-for="Quantity" class="text-danger"></span>
+        </div>
+        <div class="form-group">
+            <label>DateStart</label>
+            <input asp-for="DateStart" class="form-control"  />
+            <span asp-validation-for="DateStart" class="text-danger"></span>
+        </div>
+        <div class="form-group">
+            <label>DateExpired</label>
+            <input asp-for="DateExpired" class="form-control" />
+            <span asp-validation-for="DateExpired" class="text-danger"></span>
+        </div>
+        <div class="form-group">
+            <label>Status</label>
+            <select asp-for="Status" class="form-control">
+                <option value="1">Hiển thị</option>
+                <option value="0">Ẩn</option>
+            </select>
+            <span asp-validation-for="Status" class="text-danger"></span>
+        </div>
+        <button type="submit" class="btn btn-success">Create</button>
+    </form>
+</div>
+<div class="col-md-12">
+    <h4>Danh sách Coupon</h4>
+
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Description</th>
+                <th>Giảm giá</th>
+                <th>Quantity</th>
+                <th>Date Start</th>
+                <th>Date Expired</th>
+                <th>Status</th>
+                <th style="width: 130px; text-align:center;">Remaining Term</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            @foreach (var item in ViewBag.Coupons)
+            {
+                <tr>
+                    <td>@item.Name</td>
+                    <td>@Html.Raw(@item.Description)</td>
+                    <td>
+                        @if (item.DiscountType == 1)
+                        {
+                            <span class="badge bg-info">
+                                Giảm @item.DiscountPercent %
+                            </span>
+                        }
+                        else if (item.DiscountType == 2)
+                        {
+                            <span class="badge bg-primary">
+                                Giảm @item.DiscountAmount.ToString("#,##0") VND
+                            </span>
+                        }
+                    </td>
+
+                    <td>@item.Quantity</td>
+                    <td>@item.DateStart.ToString("dd/MM/yyyy HH:mm")</td>
+                    <td>@item.DateExpired.ToString("dd/MM/yyyy HH:mm")</td>
+                    <td>
+                        <select class="form-select form-select-sm change-status"
+                                data-id="@item.Id">
+                            <option value="1" selected="@(item.Status == 1)">
+                                Hiển thị
+                            </option>
+                            <option value="0" selected="@(item.Status == 0)">
+                                Ẩn
+                            </option>
+                        </select>
+                    </td>
+                    <td>
+                        @{
+                            var daysLeft = (item.DateExpired - DateTime.Now).Days;
+                        }
+
+                        @if (daysLeft < 0)
+                        {
+                            <span class="badge bg-danger">Đã hết hạn</span>
+                        }
+                        else if (daysLeft == 0)
+                        {
+                            <span class="badge bg-warning text-dark">Hết hạn hôm nay</span>
+                        }
+                        else if (daysLeft <= 3)
+                        {
+                            <span class="badge bg-warning text-dark">
+                                @daysLeft ngày
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-success">
+                                @daysLeft ngày
+                            </span>
+                        }
+                    </td>
+
+
+                    <td>
+                        <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-warning btn-sm">Edit</a>
+                        <a asp-action="Delete" asp-route-id="@item.Id"
+                           onclick="return confirm('Xóa coupon này?')"
+                           class="btn btn-danger btn-sm">Delete</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script src="//cdn.ckeditor.com/4.22.1/standard/ckeditor.js"></script>
+    <script>
+        CKEDITOR.replace('Description');
+    </script>
+    <script>
+        function toggleDiscount() {
+            let type = $('input[name="DiscountType"]:checked').val();
+
+            if (type == 1) {
+                $('#percentBox').removeClass('d-none');
+                $('#amountBox').addClass('d-none');
+                $('#DiscountAmount').val(0);
+            } else {
+                $('#amountBox').removeClass('d-none');
+                $('#percentBox').addClass('d-none');
+                $('#DiscountPercent').val(0);
+            }
+        }
+
+        $(document).ready(function () {
+            toggleDiscount();
+            $('input[name="DiscountType"]').change(toggleDiscount);
+        });
+    </script>
+}
+

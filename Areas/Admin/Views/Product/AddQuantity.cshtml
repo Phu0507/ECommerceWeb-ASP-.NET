@@ -1,0 +1,56 @@
+﻿@model ProductQuantityModel
+@{
+    ViewData["Title"] = "Add Quantity";
+    var total_quantities = 0;
+    var key = 1;
+}
+<h4>Add Quantity</h4>
+<div class="col-md-9">
+    <form asp-action="StoreProductQuantity" asp-controller="Product" enctype="multipart/form-data">
+        <input asp-for="ProductId" type="hidden" value="@ViewBag.Id"/>
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <div class="form-group">
+            <label>Quantity</label>
+            <input asp-for="Quantity" class="form-control" type="number" min="1" value="1" max="2000"/>
+            <span asp-validation-for="Quantity" class="text-danger"></span>
+        </div>
+        <button type="submit" class="btn btn-success">Add</button>
+    </form>
+    <h3>Existing Product Quantities:</h3>
+    <table class="table table-strped">
+        <thead>
+            <tr>
+                <th>Key</th>
+                <th>Quantity added</th>
+                <th>Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in ViewBag.ProductQuantities)
+            {
+                total_quantities += item.Quantity;
+                <tr>
+                    <td>@key</td>
+                    <td>@item.Quantity</td>
+                    <td>@item.DateCreated.ToString("g")</td>
+                </tr>
+                key++;
+            }
+            <tr>
+                <td colspan="1"><strong>Total Quantities:</strong></td>
+                <td colspan="2"><strong>@total_quantities</strong></td>
+            </tr>
+        </tbody>
+    </table>
+    <a asp-action="Index" asp-controller="Product" class="btn btn-secondary mt-2">Back to List</a>
+</div>
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script src="//cdn.ckeditor.com/4.22.1/standard/ckeditor.js"></script>
+    <script>
+        CKEDITOR.replace('Description');
+    </script>
+}
+

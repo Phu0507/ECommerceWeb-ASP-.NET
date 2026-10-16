@@ -1,0 +1,54 @@
+﻿@model IEnumerable<OrderModel>
+@{
+    ViewData["Title"] = "List History Orders Placed By " + @ViewBag.UserEmail;
+}
+<h3>List History Orders Placed By @ViewBag.UserEmail</h3>
+<table class="table">
+    <thead>
+        <tr>
+            <th scope="col">#</th>
+            <th scope="col">Order Code</th>
+            <th scope="col">Shipping Cost</th>
+            <th scope="col">Coupon Code</th>
+            <th scope="col">UserName</th>
+            <th scope="col">Date</th>
+            <th scope="col">Status</th>
+            <th scope="col">Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <th scope="row">@item.Id</th>
+                <td>@item.OrderCode</td>
+                <td>@item.ShippingCost.ToString("#,##0 VND")</td>
+                <td>@item.CouponCode</td>
+                <td>@item.Username</td>
+                <td>@item.CreatedDate</td>
+                <td>
+                    @if (item.Status == 1)
+                    {
+                        <span class="text text-danger">Đơn hàng mới</span>
+                    }
+                    else if (item.Status == 2)
+                    {
+                        <span class="text text-success">Đơn hàng đã giao</span>
+                    } 
+                    else
+                    {
+                        <span class="text text-warning">Đơn hàng đã hủy</span>
+                    }
+                </td>
+
+                <td>
+                    @if (item.Status == 1)
+                    {
+                        <a class="btn btn-danger btn-sm" asp-action="CancelOrder" asp-controller="Account" asp-route-ordercode="@item.OrderCode">Cancel Order</a>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
